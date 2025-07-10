@@ -3,6 +3,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "prebuild": "chmod +x node_modules/.bin/*",
         "build": " npx vite build"
     },
     "devDependencies": {
