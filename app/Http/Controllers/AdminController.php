@@ -171,7 +171,17 @@ class AdminController extends Controller
         $pdf = Pdf::loadView('admin.invoice',compact('data'));
         return $pdf->download('invoice.pdf');
     }
+    public function delete($id)
+    {
+    $order = Order::find($id);
+    if ($order) {
+        $order->delete();
+        Toastr::success('Pesanan berhasil dihapus', 'Sukses');
+    } else {
+        Toastr::error('Pesanan tidak ditemukan', 'Gagal');
+    }
 
+    return redirect()->back();
+    }
 
 }
-

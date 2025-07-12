@@ -27,6 +27,8 @@
         <li class="nav-item <?php echo e(Request::is('contact') ? 'active' : ''); ?>">
           <a class="nav-link" href="<?php echo e(url('contact')); ?>">Hubungi Kami</a>
         </li>
+        
+
       </ul>
 
       <div class="user_option">

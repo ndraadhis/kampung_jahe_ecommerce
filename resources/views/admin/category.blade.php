@@ -4,9 +4,14 @@
   @include('admin.css')
 
   <style type="text/css">
+    body {
+      font-family: 'Segoe UI', sans-serif;
+    }
+
     input[type='text'] {
       width: 400px;
       height: 50px;
+      font-family: inherit;
     }
 
     .form-kanan {
@@ -30,6 +35,7 @@
       margin: 0 auto;
       border: 2px solid yellowgreen;
       width: 600px;
+      font-family: inherit;
     }
 
     th {
@@ -38,12 +44,23 @@
       font-size: 20px;
       font-weight: bold;
       color: white;
+      font-family: inherit;
     }
 
     td {
       color: white;
       padding: 10px;
       border: 1px solid skyblue;
+      font-family: inherit;
+    }
+
+    .btn {
+      margin: 2px;
+      font-family: inherit;
+    }
+
+    h1 {
+      font-family: inherit;
     }
   </style>
 </head>
@@ -57,7 +74,7 @@
       <div class="container-fluid">
         <h1 style="color:white; text-align: center;">Tambah Kategori Produk</h1>
 
-        <!-- Form Tambah Kategori di Kanan -->
+        <!-- Form Tambah Kategori -->
         <div class="form-kanan">
           <form action="{{ url('add_category') }}" method="POST">
             @csrf
@@ -70,16 +87,13 @@
         <table class="table_deg">
           <tr>
             <th>Nama Kategori</th>
-            <th>Edit</th>
-            <th>Hapus</th>
+            <th>Opsi</th>
           </tr>
           @foreach($data as $data)
           <tr>
             <td>{{ $data->category_name }}</td>
             <td>
               <a class="btn btn-success" href="{{ url('edit_category', $data->id) }}">Edit</a>
-            </td>
-            <td>
               <a class="btn btn-danger" onclick="confirmation(event)" href="{{ url('delete_category', $data->id) }}">Hapus</a>
             </td>
           </tr>

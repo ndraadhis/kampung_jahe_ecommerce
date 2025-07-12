@@ -27,6 +27,8 @@
         <li class="nav-item {{ Request::is('contact') ? 'active' : '' }}">
           <a class="nav-link" href="{{ url('contact') }}">Hubungi Kami</a>
         </li>
+        
+
       </ul>
 
       <div class="user_option">

@@ -81,3 +81,5 @@ Route::get('/print_pdf/{id}', [AdminController::class, 'print_pdf'])->middleware
 Route::get('/search-category', [HomeController::class, 'searchCategory'])->name('shop.searchCategory');
 
 Route::get('shop', [HomeController::class, 'shop'])->name('shop.index');
+
+Route::delete('/delete_order/{id}', [AdminController::class, 'delete'])->name('delete_order');

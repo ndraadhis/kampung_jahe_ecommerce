@@ -3,87 +3,102 @@
   <head> 
    @include('admin.css')
 
-<style type="text/css">
-    .div_deg{
+   <style type="text/css">
+    .div_deg {
         display: flex;
         justify-content: center;
-        align-items:center;
+        margin-top: 40px;
     }
-    label{
+    label {
         display: inline-block;
         width: 200px;
-        padding: 20px;
+        margin-bottom: 10px;
+        color: white;
     }
-    input[type='text']{
+    input[type='text'],
+    input[type='number'],
+    select,
+    textarea {
         width: 300px;
-        height: 60px;
+        padding: 10px;
+        margin-bottom: 20px;
     }
-    textarea{
-        width: 400px;
+    textarea {
         height: 80px;
     }
-</style>
-
+    .form-box {
+        background-color: #2c3e50;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        color: white;
+    }
+   </style>
   </head>
   <body>
    
    @include('admin.header')
-
    @include('admin.sidebar')
-      <!-- Sidebar Navigation end-->
-      <div class="page-content">
-        <div class="page-header">
-          <div class="container-fluid">
 
-          <h2>Update Produk</h2>
-          <div class="div_deg">
-          <form action="{{ url('/edit_product', $data->id) }}" method="POST" enctype="multipart/form-data">
+    <div class="page-content">
+      <div class="page-header">
+        <h2 class="text-center" style="color:white; margin-top: 20px;">Update Produk</h2>
 
+        <div class="div_deg">
+          <form class="form-box" action="{{ url('/edit_product', $data->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
-                <div>
-                    <label>Nama Produk</label>
-                    <input type="text" name="title" value="{{$data->title}}">
-                </div>
-                <div>
-                    <label>Deskripsi Produk</label>
-                   <textarea name="description">{{$data->description}}</textarea>
-                </div>
-                <div>
-                    <label>Harga</label>
-                    <input type="text" name="price" value="{{$data->price}}">
-                </div>
-                <div>
-                    <label>Jumlah Produk</label>
-                    <input type="number" name="quantity" value="{{$data->quantity}}">
-                </div>
-                <div>
-                    <label>Category</label>
-                    <select name="category">
-                        <option value="{{$data->category}}">{{$data->category}}</option>
-                        @foreach($category as $category)
-                        <option value="{{$category->category_name}}">{{$category->category_name}}</option>
-                        @endforeach
 
-                    </select>
-                </div>
-                <div>
-                    <label>Current Image</label>
-                    <img width="150" src="/products/{{$data->image}}">
-                </div>
-                <div>
-                    <label>New Image</label>
-                    <input type="file" name="image">
-                </div>
-                <div>
-                    <input class="btn btn-success" type="submit" value="Update Product">
-                    
-                </div>
-            </form>
-          </div>
-          </div>   
-      </div>
+            <div>
+              <label>Nama Produk</label>
+              <input type="text" name="title" value="{{ $data->title }}">
+            </div>
+
+            <div>
+              <label>Deskripsi Produk</label>
+              <textarea name="description">{{ $data->description }}</textarea>
+            </div>
+
+            <div>
+              <label>Harga</label>
+              <input type="text" name="price" value="{{ $data->price }}">
+            </div>
+
+            <div>
+              <label>Jumlah Produk</label>
+              <input type="number" name="quantity" value="{{ $data->quantity }}">
+            </div>
+
+            <div>
+              <label>Kategori</label>
+              <select name="category">
+                <option value="{{ $data->category }}">{{ $data->category }}</option>
+                @foreach($category as $cat)
+                  @if($cat->category_name !== $data->category)
+                    <option value="{{ $cat->category_name }}">{{ $cat->category_name }}</option>
+                  @endif
+                @endforeach
+              </select>
+            </div>
+
+            <div>
+              <label>Gambar Saat Ini</label><br>
+              <img width="150" src="{{ asset('products/'.$data->image) }}" style="margin-bottom: 20px;">
+            </div>
+
+            <div>
+              <label>Perbaharui Gambar Baru</label>
+              <input type="file" name="image">
+            </div>
+
+            <div>
+              <input class="btn btn-success" type="submit" value=" Perbaharui">
+            </div>
+
+          </form>
+        </div>
+      </div>   
     </div>
-    <!-- JavaScript files-->
+
    @include('admin.js')
   </body>
 </html>

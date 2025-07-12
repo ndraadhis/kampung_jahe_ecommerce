@@ -5,6 +5,10 @@
     @include('admin.css')
 
     <style type="text/css">
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+
         .div_deg {
             display: flex;
             justify-content: center;
@@ -14,11 +18,13 @@
 
         h1 {
             color: white;
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         label {
             color: white !important;
-            font-size: 18px !important;
+            font-size: 16px;
             display: inline-block;
             width: 200px;
         }
@@ -32,21 +38,25 @@
             height: 50px;
             margin-bottom: 20px;
             padding: 10px;
-            font-size: 16px;
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
 
         textarea {
-            width: 350px;
             height: 80px;
+            resize: vertical;
         }
 
         .input_deg {
-            padding: 15px;
-            margin: 10px 0;
+            padding: 10px 0;
         }
 
-        .btn {
-            margin-top: 20px;
+        .btn-success {
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -59,7 +69,8 @@
     <div class="page-content">
         <div class="page-header">
             <div class="container-fluid">
-                <h1 class="text-center">Tambah Produk</h1>
+
+                <h1>Tambah Produk</h1>
 
                 <div class="div_deg">
                     <form action="{{ url('upload_product') }}" method="POST" enctype="multipart/form-data">
@@ -89,8 +100,8 @@
                             <label for="category">Kategori Produk</label>
                             <select id="category" name="category" required>
                                 <option value="">Pilih Kategori</option>
-                                @foreach($category as $category)
-                                    <option value="{{ $category->category_name }}">{{ $category->category_name }}</option>
+                                @foreach($category as $cat)
+                                    <option value="{{ $cat->category_name }}">{{ $cat->category_name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -103,6 +114,7 @@
                         <div class="input_deg">
                             <input type="submit" class="btn btn-success" value="Tambah Produk">
                         </div>
+
                     </form>
                 </div>
 
@@ -110,7 +122,6 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
     @include('admin.js')
 </body>
 
