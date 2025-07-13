@@ -105,7 +105,7 @@
               <td>{{ $data->rec_address }}</td>
               <td>{{ $data->phone }}</td>
               <td>{{ $data->product->title }}</td>
-              <td>{{$data->product->price}}</td>
+              <td>{{ $data->product->price }}</td>
               <td><img src="{{ asset('products/'.$data->product->image) }}" alt="Produk"></td>
               <td>{{ $data->payment_status }}</td>
               <td>
