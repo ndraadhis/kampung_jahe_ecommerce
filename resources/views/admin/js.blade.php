@@ -5,8 +5,8 @@
       console.log(urlToRedirect);
 
       swal({
-        title: "Are you sure?",
-        text: "This action cannot be undone.",
+        title: "Apakah Kamu Yakin?",
+        text: "Tindakan Ini Tidak Dapat Dipulihkan.",
         icon: "warning",
         buttons: true,
         dangerMode: true,
