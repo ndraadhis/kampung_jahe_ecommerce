@@ -82,4 +82,4 @@ Route::get('/search-category', [HomeController::class, 'searchCategory'])->name(
 
 Route::get('shop', [HomeController::class, 'shop'])->name('shop.index');
 
-Route::delete('/delete_order/{id}', [AdminController::class, 'delete'])->name('delete_order');
+Route::get('/delete_order/{id}', [AdminController::class, 'delete'])->name('delete_order');

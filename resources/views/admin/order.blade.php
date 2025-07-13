@@ -105,7 +105,7 @@
               <td>{{ $data->rec_address }}</td>
               <td>{{ $data->phone }}</td>
               <td>{{ $data->product->title }}</td>
-              <td>Rp{{ number_format($data->product->price, 0, ',', '.') }}</td>
+              <td>{{$data->product->price}}</td>
               <td><img src="{{ asset('products/'.$data->product->image) }}" alt="Produk"></td>
               <td>{{ $data->payment_status }}</td>
               <td>
@@ -120,7 +120,13 @@
               <td>
                 <a class="btn btn-primary" href="{{ url('on_the_way', $data->id) }}">On the way</a><br>
                 <a class="btn btn-success" href="{{ url('delivered', $data->id) }}">Delivered</a><br>
-                <a href="{{ url('delete_order', $data->id) }}" class="btn btn-danger" onclick="confirmation(event)">Hapus</a>
+                  <form id="delete-form-{{ $data->id }}" action="{{ route('delete_order', $data->id) }}" method="POST" style="display: none;">
+                  @csrf
+                  @method('DELETE')
+                  </form>
+
+              <button type="button" class="btn btn-danger" onclick="confirmDelete({{ $data->id }})">Hapus</button>
+
               </td>
               <td>
                 <a class="btn btn-secondary" href="{{ url('print_pdf', $data->id) }}">Print PDF</a>

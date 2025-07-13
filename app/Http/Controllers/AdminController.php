@@ -12,6 +12,9 @@ use App\Models\Product;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
+
+
+
 class AdminController extends Controller
 {
     public function view_category()
@@ -176,9 +179,7 @@ class AdminController extends Controller
     $order = Order::find($id);
     if ($order) {
         $order->delete();
-        Toastr::success('Pesanan berhasil dihapus', 'Sukses');
-    } else {
-        Toastr::error('Pesanan tidak ditemukan', 'Gagal');
+        toastr()->timeOut(10000)->closeButton()->Selamat('Pesanan Selesai');
     }
 
     return redirect()->back();
