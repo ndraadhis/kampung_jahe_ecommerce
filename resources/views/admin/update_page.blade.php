@@ -86,12 +86,12 @@
             </div>
 
             <div>
-              <label>Perbaharui Gambar Baru</label>
+              <label>Perbarui Gambar Baru</label>
               <input type="file" name="image">
             </div>
 
             <div>
-              <input class="btn btn-success" type="submit" value=" Perbaharui">
+              <input class="btn btn-success" type="submit" value=" Perbarui">
             </div>
 
           </form>
