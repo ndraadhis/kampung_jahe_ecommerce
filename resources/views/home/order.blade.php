@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Daftar Pesanan Saya</title>
     @include('home.css')
-
-    <style type="text/css">
+    <style>
         .div_center {
             display: flex;
             justify-content: center;
@@ -26,62 +25,119 @@
             color: white;
             font-size: 19px;
             font-weight: bold;
-            text-align: center;
         }
         td {
             border: 1px solid black;
             padding: 10px;
         }
-        .logout-form {
-            margin-top: 40px;
+        img {
+            border-radius: 8px;
         }
-        .logout-form input {
-            padding: 8px 20px;
-            background-color: #dc3545;
-            color: white;
+        .invoice-button {
+            margin-top: 30px;
+        }
+        .btn-success {
+            padding: 10px 20px;
+            font-size: 15px;
             border: none;
-            border-radius: 5px;
-            font-weight: bold;
+            background-color: #28a745;
+            color: white;
+            border-radius: 6px;
             cursor: pointer;
+            text-decoration: none;
         }
-        .logout-form input:hover {
-            background-color: #c82333;
+        .btn-danger {
+            padding: 6px 12px;
+            font-size: 14px;
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 <div class="hero_area">
-    <!-- Header -->
     @include('home.header')
 
-    <!-- Orders Table -->
     <div class="div_center">
         <h2>Pesanan Anda</h2>
         <table>
-            <tr>
-                <th>Nama Produk</th>
-                <th>Harga</th>
-                <th>Status Pengiriman</th>
-                <th>Gambar</th>
-            </tr>
-            @foreach($order as $order)
-            <tr>
-                <td>{{ $order->product->title }}</td>
-                <td>{{$order->product->price}}</td>
-                <td>{{ $order->status }}</td>
-                <td>
-                    <img height="200" width="200" src="{{ asset('products/' . $order->product->image) }}" alt="gambar produk">
-                </td>
-            </tr>
-            @endforeach
+            <thead>
+                <tr>
+                    <th>Nama Produk</th>
+                    <th>Harga</th>
+                    <th>Status Pengiriman</th>
+                    <th>Nomor Resi</th>
+                    <th>Gambar</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($order as $order)
+                <tr>
+                    <td>{{ $order->product->title }}</td>
+                    <td>Rp{{ number_format($order->product->price, 0, ',', '.') }}</td>
+                    <td>
+                        @switch($order->status)
+                            @case('in progress') Sedang Diproses @break
+                            @case('On the way') Dalam Pengiriman @break
+                            @case('Delivered') Selesai @break
+                            @default - 
+                        @endswitch
+                    </td>
+                    <td>{{ $order->resi ?? '-' }}</td>
+                    <td>
+                        <img src="{{ asset('products/' . $order->product->image) }}" alt="gambar produk" width="150">
+                    </td>
+                    <td>
+                        @if($order->status == 'in progress')
+                        <form action="{{ route('user.cancel.order', $order->id) }}" method="POST" class="cancel-order-form">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Batal</button>
+                        </form>
+                        @else
+                            <span>-</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
         </table>
 
-        <!-- Logout Button -->
-        
+        <div class="invoice-button">
+            <a href="{{ route('user.invoice.all') }}" class="btn btn-success" target="_blank">
+                Lihat Semua Invoice (PDF)
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Footer -->
 @include('home.footer')
+
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.querySelectorAll('.cancel-order-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Yakin ingin membatalkan?',
+                text: "Pesanan akan dibatalkan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, batalkan',
+                cancelButtonText: 'Tidak'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

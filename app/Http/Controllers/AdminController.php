@@ -155,19 +155,36 @@ class AdminController extends Controller
 
     }
     public function on_the_way($id)
-    {
-        $data = Order::find($id);
-        $data->status = 'On the way';
-        $data->save();
-        return redirect('/view_orders');
+{
+    $order = Order::find($id);
+
+    if ($order) {
+        $order->status = 'On the way';
+        $order->save();
+
+        toastr()->success('Status pesanan diperbarui ke: Dalam Pengiriman');
+    } else {
+        toastr()->error('Pesanan tidak ditemukan.');
+    }
+
+    return redirect()->back();
     }
     public function delivered($id)
     {
-        $data = Order::find($id);
-        $data->status = 'Delivered';
-        $data->save();
-        return redirect('/view_orders');
+    $order = Order::find($id);
+
+    if ($order) {
+        $order->status = 'Delivered';
+        $order->save();
+
+        toastr()->success('Status pesanan diperbarui ke: Sedang Di Antar');
+    } else {
+        toastr()->error('Pesanan tidak ditemukan.');
     }
+
+    return redirect()->back();
+    }
+
     public function print_pdf($id)
     {
         $data = Order::find($id);
@@ -179,7 +196,8 @@ class AdminController extends Controller
     $order = Order::find($id);
     if ($order) {
         $order->delete();
-        toastr()->timeOut(10000)->closeButton()->Selamat('Pesanan Selesai');
+       toastr()->timeOut(10000)->closeButton()->success('Selamat! Pesanan telah selesai diproses.');
+
     }
 
     return redirect()->back();

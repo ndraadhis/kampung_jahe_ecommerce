@@ -12,6 +12,8 @@ use Xendit\Invoice;
 use Xendit\Configuration;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class HomeController extends Controller
 {
@@ -72,7 +74,7 @@ class HomeController extends Controller
         $data->user_id = $user_id;
         $data->product_id = $product_id;
         $data->save();
-        toastr()->timeOut(10000)->closeButton()->addSuccess('Product Added to the Cart Successfully');
+        toastr()->timeOut(10000)->closeButton()->addSuccess('Produk Berhasil di Tambahkan');
         return redirect()->back();
     }
 
@@ -102,35 +104,37 @@ class HomeController extends Controller
     }
 
     public function confirm_order(Request $request)
-    {
-        $name = $request->name;
-        $address = $request->address;
-        $phone = $request->phone;
-        $paymentMethod = $request->payment_method; // Ambil metode pembayaran
-        $userid = Auth::user()->id;
-    
-        $cart = Cart::where('user_id', $userid)->get();
-    
-        foreach ($cart as $carts) {
-            $order = new Order;
-            $order->name = $name;
-            $order->rec_address = $address;
-            $order->phone = $phone;
-            $order->user_id = $userid;
-            $order->product_id = $carts->product_id;
-            $order->payment_status = $paymentMethod; // Simpan metode pembayaran
-            $order->status = 'in progress'; // default status
-            $order->created_at = now();
-            $order->updated_at = now();
-            $order->save();
-        }
-    
-        // Bersihkan keranjang
-        Cart::where('user_id', $userid)->delete();
-    
-        toastr()->timeOut(10000)->closeButton()->addSuccess('Order Successfully with method: ' . $paymentMethod);
-        return redirect()->back();
+{
+    $name = $request->name;
+    $address = $request->address;
+    $phone = $request->phone;
+    $paymentMethod = $request->payment_method;
+    $userid = Auth::user()->id;
+
+    $cart = Cart::where('user_id', $userid)->get();
+
+    foreach ($cart as $carts) {
+        $order = new Order;
+        $order->name = $name;
+        $order->rec_address = $address;
+        $order->phone = $phone;
+        $order->user_id = $userid;
+        $order->product_id = $carts->product_id;
+        $order->payment_status = $paymentMethod;
+        $order->status = 'in progress';
+
+        $order->resi = 'RESI-' . strtoupper(uniqid());
+
+        $order->created_at = now();
+        $order->updated_at = now();
+        $order->save();
     }
+
+    Cart::where('user_id', $userid)->delete();
+
+    toastr()->timeOut(10000)->closeButton()->addSuccess('Pesanan Berhasil Dengan Pembayaran: ' . $paymentMethod);
+    return redirect('/myorders'); // arahkan langsung ke halaman riwayat pesanan
+}
 
     public function myorders()
     {
@@ -191,4 +195,39 @@ class HomeController extends Controller
 
     return view('home.shop', compact('product', 'keyword'));
 }
+public function showConfirmationPage()
+{
+    $cart = Cart::with('product')->where('user_id', Auth::id())->get();
+
+    if ($cart->isEmpty()) {
+        return redirect('/')->with('error', 'Keranjang Anda kosong.');
+    }
+
+    return view('home.konfirmasi_pesanan', compact('cart'));
+}
+public function printAllInvoices()
+{
+    $orders = Order::with('product')
+        ->where('user_id', Auth::id())
+        ->get();
+
+    if ($orders->isEmpty()) {
+        return redirect()->back()->with('error', 'Tidak ada pesanan ditemukan.');
+    }
+
+    $pdf = Pdf::loadView('home.invoice_all', compact('orders'));
+    return $pdf->stream('semua_invoice.pdf'); // Atau ->download() untuk langsung unduh
+}
+public function cancelOrder($id)
+{
+    $order = Order::where('id', $id)->where('user_id', Auth::id())->first();
+
+    if ($order && $order->status == 'in progress') {
+        $order->delete(); // Atau ubah status jadi 'cancelled' jika ingin disimpan
+        return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan.');
+    }
+
+    return redirect()->back()->with('error', 'Pesanan tidak dapat dibatalkan.');
+}
+
 }

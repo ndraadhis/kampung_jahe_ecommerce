@@ -83,3 +83,9 @@ Route::get('/search-category', [HomeController::class, 'searchCategory'])->name(
 Route::get('shop', [HomeController::class, 'shop'])->name('shop.index');
 
 Route::get('/delete_order/{id}', [AdminController::class, 'delete'])->name('delete_order');
+
+Route::get('/proses-pesanan', [HomeController::class, 'showConfirmationPage'])->middleware('auth');
+
+Route::get('/user/invoice/all', [HomeController::class, 'printAllInvoices'])->middleware(['auth']) ->name('user.invoice.all');
+
+Route::delete('/cancel-order/{id}', [HomeController::class, 'cancelOrder'])->name('user.cancel.order');

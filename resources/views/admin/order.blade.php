@@ -93,6 +93,7 @@
               <th>Harga</th>
               <th>Gambar</th>
               <th>Status Pembayaran</th>
+              <th>No. Resi</th> <!-- Tambahan -->
               <th>Status</th>
               <th>Ubah Status</th>
               <th>Print PDF</th>
@@ -108,25 +109,27 @@
               <td>{{ $data->product->price }}</td>
               <td><img src="{{ asset('products/'.$data->product->image) }}" alt="Produk"></td>
               <td>{{ $data->payment_status }}</td>
+              <td>{{ $data->resi ?? '-' }}</td> <!-- Tambahan kolom resi -->
               <td>
-                @if($data->status == 'in progress')
-                  <span class="status-red">{{ $data->status }}</span>
-                @elseif($data->status == 'On the way')
-                  <span class="status-blue">{{ $data->status }}</span>
-                @else
-                  <span class="status-yellow">{{ $data->status }}</span>
-                @endif
+                  @if($data->status == 'in progress')
+                    <span class="status-red">Sedang diproses</span>
+                  @elseif($data->status == 'On the way')
+                    <span class="status-blue">Dalam Pengiriman</span>
+                  @elseif($data->status == 'Delivered')
+                    <span class="status-yellow">Sedang di Antar</span>
+                  @else
+                    <span>-</span>
+                 @endif
               </td>
+
               <td>
-                <a class="btn btn-primary" href="{{ url('on_the_way', $data->id) }}">On the way</a><br>
-                <a class="btn btn-success" href="{{ url('delivered', $data->id) }}">Delivered</a><br>
-                  <form id="delete-form-{{ $data->id }}" action="{{ route('delete_order', $data->id) }}" method="POST" style="display: none;">
-                  @csrf
-                  @method('DELETE')
-                  </form>
+                <a class="btn btn-primary" href="{{ url('on_the_way', $data->id) }}">Dalam Pengiriman</a><br>
+                <a class="btn btn-success" href="{{ url('delivered', $data->id) }}">Sedang di Antar</a><br>
 
-              <button type="button" class="btn btn-danger" onclick="confirmDelete({{ $data->id }})">Hapus</button>
-
+                <form action="{{ route('delete_order', $data->id) }}" method="GET">
+                <button type="submit" class="btn btn-danger">Selesai</button>
+              </form>
+              
               </td>
               <td>
                 <a class="btn btn-secondary" href="{{ url('print_pdf', $data->id) }}">Print PDF</a>
@@ -141,6 +144,14 @@
 </div>
 
 @include('admin.js')
+
+<script>
+  function confirmDelete(id) {
+    if (confirm("Yakin ingin menghapus pesanan ini?")) {
+      document.getElementById('delete-form-' + id).submit();
+    }
+  }
+</script>
 
 </body>
 </html>

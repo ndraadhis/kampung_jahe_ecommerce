@@ -42,7 +42,7 @@
 
     <div class="page-content">
       <div class="page-header">
-        <h2 class="text-center" style="color:white; margin-top: 20px;">Update Produk</h2>
+        <h2 class="text-center" style="color:white; margin-top: 20px;">Perbarui Produk</h2>
 
         <div class="div_deg">
           <form class="form-box" action="{{ url('/edit_product', $data->id) }}" method="POST" enctype="multipart/form-data">
