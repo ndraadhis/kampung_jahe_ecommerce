@@ -105,36 +105,51 @@ class HomeController extends Controller
 
     public function confirm_order(Request $request)
 {
+    $userId = Auth::id();
+    $cartItems = Cart::where('user_id', $userId)->get();
+
+    if ($cartItems->isEmpty()) {
+        return redirect()->back()->with('error', 'Keranjang Anda kosong.');
+    }
+
     $name = $request->name;
     $address = $request->address;
     $phone = $request->phone;
     $paymentMethod = $request->payment_method;
-    $userid = Auth::user()->id;
 
-    $cart = Cart::where('user_id', $userid)->get();
+    $orderList = [];
 
-    foreach ($cart as $carts) {
-        $order = new Order;
+    foreach ($cartItems as $cartItem) {
+        $order = new Order();
+        $order->transaction_code = 'TRX-' . strtoupper(uniqid());
         $order->name = $name;
         $order->rec_address = $address;
         $order->phone = $phone;
-        $order->user_id = $userid;
-        $order->product_id = $carts->product_id;
+        $order->user_id = $userId;
+        $order->product_id = $cartItem->product_id;
         $order->payment_status = $paymentMethod;
-        $order->status = 'in progress';
-
+        $order->status = $paymentMethod === 'transfer' ? 'menunggu pembayaran' : 'in progress';
         $order->resi = 'RESI-' . strtoupper(uniqid());
 
-        $order->created_at = now();
-        $order->updated_at = now();
         $order->save();
+        $orderList[] = $order;
     }
 
-    Cart::where('user_id', $userid)->delete();
+    toastr()->timeOut(10000)->closeButton()->addSuccess('Pesanan berhasil dengan pembayaran: ' . $paymentMethod);
 
-    toastr()->timeOut(10000)->closeButton()->addSuccess('Pesanan Berhasil Dengan Pembayaran: ' . $paymentMethod);
-    return redirect('/myorders'); // arahkan langsung ke halaman riwayat pesanan
+    if ($paymentMethod === 'transfer') {
+        // Tidak menghapus cart dulu — tunggu sampai user upload bukti
+        return view('home.transfer', [
+            'order' => $orderList[0],
+            'orderList' => $orderList
+        ]);
+    }
+
+    // Hanya jika COD: kosongkan cart langsung
+    Cart::where('user_id', $userId)->delete();
+    return redirect('/myorders');
 }
+
 
     public function myorders()
     {
@@ -228,6 +243,71 @@ public function cancelOrder($id)
     }
 
     return redirect()->back()->with('error', 'Pesanan tidak dapat dibatalkan.');
+}
+public function showTransferPage()
+{
+    $order = Order::where('user_id', Auth::id())
+                ->latest()
+                ->first(); // Ambil order terbaru dari user
+
+    if (!$order) {
+        return redirect('/')->with('error', 'Pesanan tidak ditemukan.');
+    }
+
+    return view('home.transfer', compact('order'));
+}
+public function confirm_payment($id)
+{
+    $order = Order::findOrFail($id);
+
+    if ($order->user_id !== Auth::id()) {
+        abort(403);
+    }
+
+    $order->status = 'waiting'; // atau 'menunggu konfirmasi'
+    $order->save();
+
+    // Setelah user upload & konfirmasi → kosongkan cart
+    Cart::where('user_id', Auth::id())->delete();
+
+    return redirect('/myorders')->with('success', 'Pembayaran dikonfirmasi, pesanan sedang diproses.');
+}
+
+public function uploadTransferProof(Request $request, $id)
+{
+    $request->validate([
+        'transfer_proof' => 'required|mimes:jpg,jpeg,png,pdf|max:2048',
+    ]);
+
+    $order = Order::findOrFail($id);
+
+    if ($request->hasFile('transfer_proof')) {
+        $file = $request->file('transfer_proof');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('bukti_transfer'), $filename);
+
+        $order->bukti_transfer = $filename;
+        $order->save();
+    }
+
+    $orderList = Order::where('resi', $order->resi)->with('product')->get();
+
+    toastr()->success('Bukti transfer berhasil diunggah.');
+    return view('home.transfer', compact('order', 'orderList'));
+}
+public function deleteItems(Request $request)
+{
+    $itemIds = $request->input('delete_items', []);
+
+    if (!empty($itemIds)) {
+        Cart::whereIn('id', $itemIds)
+            ->where('user_id', Auth::id())
+            ->delete();
+
+        return redirect()->back()->with('success', 'Item berhasil dihapus dari keranjang.');
+    }
+
+    return redirect()->back()->with('error', 'Tidak ada item yang dipilih untuk dihapus.');
 }
 
 }

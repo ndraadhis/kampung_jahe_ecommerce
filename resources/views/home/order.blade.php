@@ -80,9 +80,10 @@
                     <td>Rp{{ number_format($order->product->price, 0, ',', '.') }}</td>
                     <td>
                         @switch($order->status)
+                             @case('waiting') Konfirmasi @break
                             @case('in progress') Sedang Diproses @break
                             @case('On the way') Dalam Pengiriman @break
-                            @case('Delivered') Selesai @break
+                            @case('Delivered') Sedang Diantar @break
                             @default - 
                         @endswitch
                     </td>

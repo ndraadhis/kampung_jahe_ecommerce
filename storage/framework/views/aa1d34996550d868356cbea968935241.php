@@ -8,7 +8,7 @@
               <div class="col-md-7">
                 <div class="detail-box"> 
                   <h1 class="welcome-text">
-                    Selamat Datang Di Ecommerce <br>
+                    Selamat Datang Di Marketplace <br>
                     Kampung Jahe Pulesari
                   </h1>
                   <p class="black-text">

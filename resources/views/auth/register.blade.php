@@ -94,7 +94,7 @@
       </div>
 
       <div class="form-group">
-        <label for="address">Alamat</label>
+        <label for="address">Alamat Lengkap</label>
         <input id="address" class="form-control" type="text" name="address" required value="{{ old('address') }}">
       </div>
 

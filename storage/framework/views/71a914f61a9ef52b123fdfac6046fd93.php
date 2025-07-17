@@ -80,9 +80,10 @@
                     <td>Rp<?php echo e(number_format($order->product->price, 0, ',', '.')); ?></td>
                     <td>
                         <?php switch($order->status):
-                            case ('in progress'): ?> Sedang Diproses <?php break; ?>
+                             case ('waiting'): ?> Konfirmasi <?php break; ?>
+                            <?php case ('in progress'): ?> Sedang Diproses <?php break; ?>
                             <?php case ('On the way'): ?> Dalam Pengiriman <?php break; ?>
-                            <?php case ('Delivered'): ?> Selesai <?php break; ?>
+                            <?php case ('Delivered'): ?> Sedang Diantar <?php break; ?>
                             <?php default: ?> - 
                         <?php endswitch; ?>
                     </td>

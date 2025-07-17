@@ -21,7 +21,9 @@
             <tr><th>Alamat</th><td>{{ $order->rec_address }}</td></tr>
             <tr><th>No. Telepon</th><td>{{ $order->phone }}</td></tr>
             <tr><th>Produk</th><td>{{ $order->product->title }}</td></tr>
+            <tr><th>Pembayaran</th><td>{{ $order->payment_status}}</td></tr>
             <tr><th>Harga</th><td>Rp{{ number_format($order->product->price, 0, ',', '.') }}</td></tr>
+            <tr><th>Nomor Transaksi</th><td>{{ $order->transaction_code ?? '-' }}</td></tr>
             <tr><th>Nomor Resi</th><td>{{ $order->resi ?? '-' }}</td></tr>
         </table>
     @endforeach

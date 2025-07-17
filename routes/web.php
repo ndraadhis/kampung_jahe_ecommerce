@@ -89,3 +89,14 @@ Route::get('/proses-pesanan', [HomeController::class, 'showConfirmationPage'])->
 Route::get('/user/invoice/all', [HomeController::class, 'printAllInvoices'])->middleware(['auth']) ->name('user.invoice.all');
 
 Route::delete('/cancel-order/{id}', [HomeController::class, 'cancelOrder'])->name('user.cancel.order');
+
+Route::get('/transfer_confirmation', [HomeController::class, 'showTransferPage'])->middleware('auth');
+
+Route::post('/upload-transfer-proof/{id}', [HomeController::class, 'uploadTransferProof'])->name('upload.transfer.proof');
+
+Route::post('/confirm-payment/{id}', [HomeController::class, 'confirm_payment'])->name('confirm.payment');
+
+Route::get('/waiting/{id}', [AdminController::class, 'waiting']);
+
+Route::post('/cart/delete-items', [HomeController::class, 'deleteItems']);
+

@@ -202,5 +202,15 @@ class AdminController extends Controller
 
     return redirect()->back();
     }
+public function waiting($id)
+{
+    $order = Order::find($id);
+    if ($order) {
+        $order->status = 'waiting';
+        $order->save();
+    }
+    return redirect()->back()->with('success', 'Status diperbarui menjadi Menunggu Konfirmasi');
+}
+
 
 }

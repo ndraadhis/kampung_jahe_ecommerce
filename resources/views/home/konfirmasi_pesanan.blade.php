@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   @include('home.css')
   <style>
@@ -80,7 +79,7 @@
   <div class="confirm_container">
     <h2>Konfirmasi Pesanan</h2>
 
-    <form method="POST" action="{{ url('/confirm_order') }}">
+    <form method="POST" action="{{ url('/confirm_order') }}" enctype="multipart/form-data">
       @csrf
 
       <div class="form_group">
@@ -106,83 +105,12 @@
           <option value="transfer">Transfer Bank</option>
         </select>
       </div>
-
-      <div class="form_group hidden" id="bank_options">
-        <label>Pilih Bank</label>
-        <select name="bank_name" id="bank_name">
-          <option value="">-- Pilih Bank --</option>
-          <option value="BRI">Bank BRI</option>
-          <option value="BCA">Bank BCA</option>
-          <option value="SeaBank">SeaBank</option>
-          <option value="Mandiri">Bank Mandiri</option>
-        </select>
-      </div>
-
-      <div class="bank_notice" id="bank_notice"></div>
-
       <button type="submit" class="submit_btn">Proses Pesanan</button>
     </form>
   </div>
 
   @include('home.footer')
 
-  <script>
-    const paymentMethod = document.getElementById('payment_method');
-    const bankOptions = document.getElementById('bank_options');
-    const bankNotice = document.getElementById('bank_notice');
-    const bankSelect = document.getElementById('bank_name');
-
-    const rekeningInfo = {
-      BRI: {
-        bank: 'Bank BRI',
-        norek: '1354 5432 3456',
-        nama: 'Indra Adhi Saputra'
-      },
-      BCA: {
-        bank: 'Bank BCA',
-        norek: '4456 3678 2345',
-        nama: 'Kampung Jahe'
-      },
-      SeaBank: {
-        bank: 'SeaBank',
-        norek: '9013 3263 0480',
-        nama: 'Indra Adhi Saputra'
-      },
-      Mandiri: {
-        bank: 'Bank Mandiri',
-        norek: '9784 6578 1432',
-        nama: 'Kampung Jahe'
-      }
-    };
-
-    paymentMethod.addEventListener('change', function () {
-      if (this.value === 'transfer') {
-        bankOptions.classList.remove('hidden');
-        bankNotice.style.display = 'block';
-      } else {
-        bankOptions.classList.add('hidden');
-        bankNotice.style.display = 'none';
-        bankNotice.innerHTML = '';
-      }
-    });
-
-    bankSelect.addEventListener('change', function () {
-      const selectedBank = this.value;
-      if (rekeningInfo[selectedBank]) {
-        const info = rekeningInfo[selectedBank];
-        bankNotice.innerHTML = `
-          Silakan transfer ke rekening berikut:<br>
-          <strong>${info.bank}</strong><br>
-          No. Rekening: <strong>${info.norek}</strong><br>
-          a.n. <strong>${info.nama}</strong>
-        `;
-        bankNotice.style.display = 'block';
-      } else {
-        bankNotice.style.display = 'none';
-        bankNotice.innerHTML = '';
-      }
-    });
-  </script>
+  
 </body>
-
 </html>
