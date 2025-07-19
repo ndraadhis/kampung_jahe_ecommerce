@@ -64,47 +64,52 @@
         <h2>Pesanan Anda</h2>
         <table>
             <thead>
-                <tr>
-                    <th>Nama Produk</th>
-                    <th>Harga</th>
-                    <th>Status Pengiriman</th>
-                    <th>Nomor Resi</th>
-                    <th>Gambar</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $__currentLoopData = $order; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <tr>
-                    <td><?php echo e($order->product->title); ?></td>
-                    <td>Rp<?php echo e(number_format($order->product->price, 0, ',', '.')); ?></td>
-                    <td>
-                        <?php switch($order->status):
-                             case ('waiting'): ?> Konfirmasi <?php break; ?>
-                            <?php case ('in progress'): ?> Sedang Diproses <?php break; ?>
-                            <?php case ('On the way'): ?> Dalam Pengiriman <?php break; ?>
-                            <?php case ('Delivered'): ?> Sedang Diantar <?php break; ?>
-                            <?php default: ?> - 
-                        <?php endswitch; ?>
-                    </td>
-                    <td><?php echo e($order->resi ?? '-'); ?></td>
-                    <td>
-                        <img src="<?php echo e(asset('products/' . $order->product->image)); ?>" alt="gambar produk" width="150">
-                    </td>
-                    <td>
-                        <?php if($order->status == 'in progress'): ?>
-                        <form action="<?php echo e(route('user.cancel.order', $order->id)); ?>" method="POST" class="cancel-order-form">
-                            <?php echo csrf_field(); ?>
-                            <?php echo method_field('DELETE'); ?>
-                            <button type="submit" class="btn btn-danger">Batal</button>
-                        </form>
-                        <?php else: ?>
-                            <span>-</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-            </tbody>
+    <tr>
+        <th>Nama Produk</th>
+        <th>Harga</th>
+        <th>Nomor Transaksi</th> <!-- Tambahan -->
+        <th>Status Pengiriman</th>
+        <th>Nomor Resi</th>
+        <th>Gambar</th>
+        <th>Aksi</th>
+    </tr>
+</thead>
+<tbody>
+    <?php $__currentLoopData = $order; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+    <tr>
+        <td><?php echo e($order->product->title); ?></td>
+        <td>Rp<?php echo e(number_format($order->product->price, 0, ',', '.')); ?></td>
+
+        <td><?php echo e($order->transaction_code ?? '-'); ?></td> <!-- Tambahan -->
+
+        <td>
+            <?php switch($order->status):
+                case ('waiting'): ?> Konfirmasi <?php break; ?>
+                <?php case ('in progress'): ?> Sedang Diproses <?php break; ?>
+                <?php case ('On the way'): ?> Dalam Pengiriman <?php break; ?>
+                <?php case ('Delivered'): ?> Sedang Diantar <?php break; ?>
+                <?php default: ?> - 
+            <?php endswitch; ?>
+        </td>
+        <td><?php echo e($order->resi ?? '-'); ?></td>
+        <td>
+            <img src="<?php echo e(asset('products/' . $order->product->image)); ?>" alt="gambar produk" width="150">
+        </td>
+        <td>
+            <?php if($order->status == 'in progress'): ?>
+            <form action="<?php echo e(route('user.cancel.order', $order->id)); ?>" method="POST" class="cancel-order-form">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
+                <button type="submit" class="btn btn-danger">Batal</button>
+            </form>
+            <?php else: ?>
+                <span>-</span>
+            <?php endif; ?>
+        </td>
+    </tr>
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+</tbody>
+
         </table>
 
         <div class="invoice-button">

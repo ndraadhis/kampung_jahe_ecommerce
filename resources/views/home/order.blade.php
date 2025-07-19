@@ -64,47 +64,52 @@
         <h2>Pesanan Anda</h2>
         <table>
             <thead>
-                <tr>
-                    <th>Nama Produk</th>
-                    <th>Harga</th>
-                    <th>Status Pengiriman</th>
-                    <th>Nomor Resi</th>
-                    <th>Gambar</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($order as $order)
-                <tr>
-                    <td>{{ $order->product->title }}</td>
-                    <td>Rp{{ number_format($order->product->price, 0, ',', '.') }}</td>
-                    <td>
-                        @switch($order->status)
-                             @case('waiting') Konfirmasi @break
-                            @case('in progress') Sedang Diproses @break
-                            @case('On the way') Dalam Pengiriman @break
-                            @case('Delivered') Sedang Diantar @break
-                            @default - 
-                        @endswitch
-                    </td>
-                    <td>{{ $order->resi ?? '-' }}</td>
-                    <td>
-                        <img src="{{ asset('products/' . $order->product->image) }}" alt="gambar produk" width="150">
-                    </td>
-                    <td>
-                        @if($order->status == 'in progress')
-                        <form action="{{ route('user.cancel.order', $order->id) }}" method="POST" class="cancel-order-form">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Batal</button>
-                        </form>
-                        @else
-                            <span>-</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
+    <tr>
+        <th>Nama Produk</th>
+        <th>Harga</th>
+        <th>Nomor Transaksi</th> <!-- Tambahan -->
+        <th>Status Pengiriman</th>
+        <th>Nomor Resi</th>
+        <th>Gambar</th>
+        <th>Aksi</th>
+    </tr>
+</thead>
+<tbody>
+    @foreach($order as $order)
+    <tr>
+        <td>{{ $order->product->title }}</td>
+        <td>Rp{{ number_format($order->product->price, 0, ',', '.') }}</td>
+
+        <td>{{ $order->transaction_code ?? '-' }}</td> <!-- Tambahan -->
+
+        <td>
+            @switch($order->status)
+                @case('waiting') Konfirmasi @break
+                @case('in progress') Sedang Diproses @break
+                @case('On the way') Dalam Pengiriman @break
+                @case('Delivered') Sedang Diantar @break
+                @default - 
+            @endswitch
+        </td>
+        <td>{{ $order->resi ?? '-' }}</td>
+        <td>
+            <img src="{{ asset('products/' . $order->product->image) }}" alt="gambar produk" width="150">
+        </td>
+        <td>
+            @if($order->status == 'in progress')
+            <form action="{{ route('user.cancel.order', $order->id) }}" method="POST" class="cancel-order-form">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">Batal</button>
+            </form>
+            @else
+                <span>-</span>
+            @endif
+        </td>
+    </tr>
+    @endforeach
+</tbody>
+
         </table>
 
         <div class="invoice-button">
