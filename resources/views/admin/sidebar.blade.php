@@ -3,10 +3,7 @@
       <nav id="sidebar">
         <!-- Sidebar Header-->
         <div class="sidebar-header d-flex align-items-center">
-          <div class="avatar"><img src="{{asset('admincss/img/indraadhis.JPG')}}" alt="..." class="img-fluid rounded-circle"></div>
-          <div class="title">
-            <h1 class="h5">INDRA ADHI SAPUTRA</h1>
-          </div>
+          
         </div>
         <!-- Sidebar Navidation Menus--><span class="heading">Menu Utama</span>
         <ul class="list-unstyled">
