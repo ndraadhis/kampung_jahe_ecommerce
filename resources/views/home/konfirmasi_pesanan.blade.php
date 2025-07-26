@@ -55,21 +55,6 @@
     .submit_btn:hover {
       background-color: #218838;
     }
-
-    .hidden {
-      display: none;
-    }
-
-    .bank_notice {
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 10px 15px;
-      border: 1px solid #ffeeba;
-      border-radius: 6px;
-      margin-top: -10px;
-      margin-bottom: 20px;
-      display: none;
-    }
   </style>
 </head>
 
@@ -105,12 +90,25 @@
           <option value="transfer">Transfer Bank</option>
         </select>
       </div>
+
+      <div class="form_group">
+        <label>Jasa Ekspedisi</label>
+        <select name="shipping_provider" required>
+          <option value="">-- Pilih Ekspedisi --</option>
+          <option value="JNE">JNE</option>
+          <option value="J&T">J&T</option>
+          <option value="SiCepat">SiCepat</option>
+          <option value="Pos Indonesia">Pos Indonesia</option>
+          <option value="AnterAja">AnterAja</option>
+          <option value="GrabExpress">GrabExpress</option>
+          <option value="GoSend">GoSend</option>
+        </select>
+      </div>
+
       <button type="submit" class="submit_btn">Proses Pesanan</button>
     </form>
   </div>
 
   @include('home.footer')
-
-  
 </body>
 </html>

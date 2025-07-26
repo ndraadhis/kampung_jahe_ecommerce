@@ -2,213 +2,208 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Konfirmasi Pesanan Transfer</title>
+    <title>Konfirmasi Pembayaran</title>
     @include('home.css')
     <style>
-        .confirmation-container {
-            max-width: 700px;
-            margin: 80px auto;
-            background-color: #fefefe;
-            padding: 40px;
-            text-align: center;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        body {
+            background-color: #f5f5f5;
         }
-        .confirmation-container h2 {
+        .container {
+            max-width: 750px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            margin-bottom: 100px;
+        }
+        h2 {
             color: #28a745;
             margin-bottom: 20px;
+            text-align: center;
         }
-        .detail-box {
-            background-color: #f9f9f9;
+        .detail {
+            background: #f9f9f9;
             padding: 20px;
-            text-align: left;
-            margin-top: 20px;
-            border: 1px solid #ddd;
             border-radius: 8px;
-        }
-        .detail-box strong {
-            display: inline-block;
-            width: 150px;
-        }
-        .btn-upload {
             margin-top: 20px;
+        }
+        .detail p {
+            margin: 8px 0;
+        }
+        .detail strong {
+            display: inline-block;
+            width: 140px;
+        }
+        .bank-info {
+            margin-top: 20px;
+        }
+        .btn {
             padding: 10px 18px;
             font-size: 14px;
             border: none;
-            background-color: #17a2b8;
-            color: white;
             border-radius: 5px;
             cursor: pointer;
         }
-        .timer {
-            font-weight: bold;
-            font-size: 18px;
-            margin-top: 15px;
-            color: red;
+        .btn-upload {
+            background-color: #17a2b8;
+            color: white;
         }
-        table {
+        .btn-confirm {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-invoice {
+            background-color: #007bff;
+            color: white;
             margin-top: 30px;
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table th, table td {
-            border: 1px solid #ccc;
-            padding: 12px;
-            font-size: 14px;
-        }
-        table th {
-            background-color: #f2f2f2;
+            display: inline-block;
         }
         select, input[type="file"] {
             width: 100%;
             padding: 8px;
             margin-top: 10px;
         }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        table th {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
 
-<div class="confirmation-container">
-    <h2>Pesanan Anda Telah Tercatat</h2>
-    <p>Silakan selesaikan pembayaran Anda melalui transfer bank dalam waktu <strong>1x24 jam</strong>.</p>
-
-    <!-- PILIH BANK -->
-    <div style="margin-top: 20px; text-align: left;">
-        <label for="bank">Pilih Bank Tujuan Transfer:</label>
-        <select id="bank" onchange="showBankDetails(this.value)">
-            <option value="">-- Pilih Bank --</option>
-            <option value="bri">BRI</option>
-            <option value="bni">BNI</option>
-            <option value="mandiri">Mandiri</option>
-        </select>
-    </div>
-
-    <div id="bank-info" class="detail-box" style="display: none;"></div>
-
-    <!-- TIMER -->
-    <div class="timer">
-        Sisa waktu pembayaran: <span id="countdown">23:59:59</span>
-    </div>
+<div class="container">
+    <h2>Konfirmasi Pembayaran via Transfer</h2>
+    <p>Silakan transfer sesuai total tagihan dalam waktu <strong>1x24 jam</strong> dan unggah bukti pembayaran.</p>
 
     <!-- TABEL PRODUK -->
-    <h3 style="margin-top: 40px;">Detail Produk yang Dibeli</h3>
-    <table>
+    <h3>Detail Produk yang Dibeli</h3>
+    <table class="detail-table">
         <thead>
-            <tr>
-                <th>Nama Produk</th>
-                <th>Jumlah</th>
-                <th>Harga</th>
-                <th>Subtotal</th>
-            </tr>
+        <tr>
+            <th>Nama Produk</th>
+            <th>Jumlah</th>
+            <th>Harga</th>
+            <th>Subtotal</th>
+        </tr>
         </thead>
         <tbody>
-            @php $total = 0; @endphp
-            @foreach ($orderList as $item)
-                @php
-                    $product = $item->product;
-                    $subtotal = $product->price;
-                    $total += $subtotal;
-                @endphp
-                <tr>
-                    <td>{{ $product->title }}</td>
-                    <td>1</td>
-                    <td>Rp{{ number_format($product->price, 0, ',', '.') }}</td>
-                    <td>Rp{{ number_format($subtotal, 0, ',', '.') }}</td>
-                </tr>
-            @endforeach
+        @php
+            $total = 0;
+            $shippingRates = [
+                'JNE' => 20000,
+                'J&T' => 18000,
+                'SiCepat' => 17000,
+                'Pos Indonesia' => 15000,
+                'AnterAja' => 16000,
+                'GrabExpress' => 25000,
+                'GoSend' => 24000,
+            ];
+            $shippingCost = $shippingRates[$order->shipping_provider] ?? 0;
+        @endphp
+
+        @foreach ($orderList as $item)
+            @php
+                $product = $item->product;
+                $subtotal = $product->price * ($item->quantity ?? 1);
+                $total += $subtotal;
+            @endphp
             <tr>
-                <td colspan="3" style="text-align:right; font-weight:bold;">Total:</td>
-                <td><strong>Rp{{ number_format($total, 0, ',', '.') }}</strong></td>
+                <td>{{ $product->title }}</td>
+                <td>{{ $item->quantity ?? 1 }}</td>
+                <td>Rp{{ number_format($product->price, 0, ',', '.') }}</td>
+                <td>Rp{{ number_format($subtotal, 0, ',', '.') }}</td>
             </tr>
+        @endforeach
+
+        <tr>
+            <td colspan="3">Ongkir ({{ $order->shipping_provider }})</td>
+            <td>Rp{{ number_format($shippingCost, 0, ',', '.') }}</td>
+        </tr>
+        <tr>
+            <td colspan="3"><strong>Total Pembayaran</strong></td>
+            <td><strong>Rp{{ number_format($total + $shippingCost, 0, ',', '.') }}</strong></td>
+        </tr>
         </tbody>
     </table>
 
-    <!-- INFORMASI USER -->
-    <div class="detail-box">
+    <hr style="margin: 30px 0;">
+
+    <!-- Form untuk simpan bank tujuan -->
+    <form action="{{ route('set.bank.tujuan', $order->id) }}" method="POST">
+        @csrf
+        <label for="bank">Pilih Bank Tujuan:</label>
+        <select id="bank" name="bank_tujuan" onchange="this.form.submit()" required>
+            <option value="">-- Pilih Bank --</option>
+            <option value="bri" {{ $order->bank_tujuan == 'bri' ? 'selected' : '' }}>BRI</option>
+            <option value="bni" {{ $order->bank_tujuan == 'bni' ? 'selected' : '' }}>BNI</option>
+            <option value="mandiri" {{ $order->bank_tujuan == 'mandiri' ? 'selected' : '' }}>Mandiri</option>
+        </select>
+    </form>
+
+    @php
+        $banks = [
+            'bri' => ['BRI', '1234 5678 9101 1121'],
+            'bni' => ['BNI', '9876 5432 1000 1112'],
+            'mandiri' => ['Mandiri', '5550 0123 4567 8910']
+        ];
+        $selected = strtolower($order->bank_tujuan);
+    @endphp
+
+    @if(isset($banks[$selected]))
+        <div class="detail bank-info">
+            <p><strong>Bank:</strong> {{ $banks[$selected][0] }}</p>
+            <p><strong>No. Rekening:</strong> {{ $banks[$selected][1] }}</p>
+            <p><strong>Atas Nama:</strong> Kampung Jahe Pulesari</p>
+        </div>
+    @endif
+
+    <!-- Info Pemesan -->
+    <div class="detail">
         <p><strong>Nama:</strong> {{ $order->name }}</p>
         <p><strong>Alamat:</strong> {{ $order->rec_address }}</p>
-        <p><strong>No. Telepon:</strong> {{ $order->phone }}</p>
-        <p><strong>Tanggal Pemesanan:</strong> {{ $order->created_at->format('d-m-Y H:i') }}</p>
-        <p><strong>No. Resi:</strong> {{ $order->resi }}</p>
+        <p><strong>No. HP:</strong> {{ $order->phone }}</p>
+        <p><strong>Tgl Pesan:</strong> {{ $order->created_at->format('d-m-Y H:i') }}</p>
         <p><strong>No. Transaksi:</strong> {{ $order->transaction_code }}</p>
         <p><strong>Status:</strong> {{ ucfirst($order->status) }}</p>
-
-        @if ($order->bukti_transfer)
-            <p><strong>Bukti Transfer:</strong><br>
-                <a href="{{ asset('bukti_transfer/'.$order->bukti_transfer) }}" target="_blank">
-                    <img src="{{ asset('bukti_transfer/'.$order->bukti_transfer) }}" width="150">
-                </a>
-            </p>
-            <div style="text-align: right; margin-top: 20px;">
-                <form action="{{ url('/confirm-payment/'.$order->id) }}" method="POST" id="confirm-payment-form">
-                    @csrf
-                    <button type="button" id="confirm-button" class="btn-upload" style="background-color:#28a745;">
-                        Konfirmasi Pembayaran
-                    </button>
-                </form>
-            </div>
-        @else
-            <div style="text-align: right; margin-top: 20px;">
-                <form action="{{ url('/upload-transfer-proof/'.$order->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <label for="bukti" style="float: left; margin-top: 10px;">Unggah Bukti Transfer</label><br>
-                    <input type="file" name="transfer_proof" accept="image/*,.pdf" required style="float: left;"><br>
-                    <button type="submit" class="btn-upload">Upload Bukti</button>
-                </form>
-            </div>
-        @endif
+        <p><strong>Waktu Sisa Pembayaran:</strong> <span id="countdown">Memuat...</span></p>
     </div>
+
+    <!-- Form Upload Bukti -->
+    <form action="{{ url('/upload-transfer-proof/'.$order->id) }}" method="POST" enctype="multipart/form-data" id="upload-form">
+        @csrf
+        @if (!$order->bukti_transfer)
+            <label>Unggah Bukti Transfer:</label>
+            <input type="file" name="transfer_proof" accept="image/*,.pdf" required>
+            <button type="submit" class="btn btn-upload" style="margin-top:10px;">Upload</button>
+        @else
+            <p><strong>Bukti Transfer:</strong></p>
+            <a href="{{ asset('bukti_transfer/'.$order->bukti_transfer) }}" target="_blank">
+                <img src="{{ asset('bukti_transfer/'.$order->bukti_transfer) }}" width="150">
+            </a>
+        @endif
+    </form>
+
+    @if ($order->bukti_transfer)
+        <form action="{{ url('/confirm-payment/'.$order->id) }}" method="POST" id="confirm-payment-form" style="margin-top: 20px;">
+            @csrf
+            <button type="button" class="btn btn-confirm" id="confirm-button">Konfirmasi Pembayaran</button>
+        </form>
+    @endif
+
+    <a href="{{ route('invoice', $order->id) }}" target="_blank" class="btn btn-invoice">🧾 Cetak Invoice</a>
 </div>
 
-@include('home.footer')
-
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    // Countdown Timer
-    const countdown = document.getElementById('countdown');
-    let deadline = new Date("{{ $order->created_at->addDay()->format('Y-m-d H:i:s') }}").getTime();
-
-    let x = setInterval(function () {
-        let now = new Date().getTime();
-        let distance = deadline - now;
-
-        if (distance <= 0) {
-            clearInterval(x);
-            countdown.innerHTML = "Waktu Habis - Pesanan Akan Dibatalkan";
-        } else {
-            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            countdown.innerHTML = hours + "j " + minutes + "m " + seconds + "d";
-        }
-    }, 1000);
-
-    // Bank Selection Info
-    function showBankDetails(bank) {
-        let info = {
-            bri: `<p><strong>Bank:</strong> BRI</p>
-                  <p><strong>No. Rekening:</strong> 1234 5678 9101 1121</p>
-                  <p><strong>Atas Nama:</strong> Kampung Jahe Pulesari</p>`,
-            bni: `<p><strong>Bank:</strong> BNI</p>
-                  <p><strong>No. Rekening:</strong> 9876 5432 1000 1112</p>
-                  <p><strong>Atas Nama:</strong> Kampung Jahe Pulesari</p>`,
-            mandiri: `<p><strong>Bank:</strong> Mandiri</p>
-                      <p><strong>No. Rekening:</strong> 5550 0123 4567 8910</p>
-                      <p><strong>Atas Nama:</strong> Kampung Jahe Pulesari</p>`
-        };
-        const bankBox = document.getElementById('bank-info');
-        if (info[bank]) {
-            bankBox.style.display = 'block';
-            bankBox.innerHTML = info[bank];
-        } else {
-            bankBox.style.display = 'none';
-            bankBox.innerHTML = '';
-        }
-    }
-
-    // SweetAlert untuk konfirmasi pembayaran
     document.getElementById('confirm-button')?.addEventListener('click', function () {
         Swal.fire({
             title: 'Konfirmasi Pembayaran?',
@@ -225,7 +220,42 @@
             }
         });
     });
-</script>
 
+    // Countdown logic
+    const createdAt = "{{ $order->created_at }}";
+    const orderId = "{{ $order->id }}";
+    const deadlineKey = `deadline_order_${orderId}`;
+
+    if (!localStorage.getItem(deadlineKey)) {
+        const deadline = new Date(createdAt);
+        deadline.setHours(deadline.getHours() + 24);
+        localStorage.setItem(deadlineKey, deadline.toISOString());
+    }
+
+    const deadlineTime = new Date(localStorage.getItem(deadlineKey));
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = deadlineTime - now;
+
+        if (distance < 0) {
+            document.getElementById("countdown").innerHTML = "<span style='color:red;'>Waktu Habis</span>";
+            const uploadForm = document.getElementById("upload-form");
+            if (uploadForm) uploadForm.style.display = 'none';
+            const confirmForm = document.getElementById("confirm-payment-form");
+            if (confirmForm) confirmForm.style.display = 'none';
+            return;
+        }
+
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerHTML = `${hours}j ${minutes}m ${seconds}d`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+</script>
 </body>
 </html>

@@ -103,7 +103,7 @@ class HomeController extends Controller
         return redirect()->back();
     }
 
-    public function confirm_order(Request $request)
+ public function confirm_order(Request $request)
 {
     $userId = Auth::id();
     $cartItems = Cart::where('user_id', $userId)->get();
@@ -112,52 +112,54 @@ class HomeController extends Controller
         return redirect()->back()->with('error', 'Keranjang Anda kosong.');
     }
 
-    $name = $request->name;
-    $address = $request->address;
-    $phone = $request->phone;
-    $paymentMethod = $request->payment_method;
+    $shippingRates = [
+        'JNE' => 20000,
+        'J&T' => 18000,
+        'SiCepat' => 17000,
+        'Pos Indonesia' => 15000,
+        'AnterAja' => 16000,
+        'GrabExpress' => 25000,
+        'GoSend' => 24000,
+    ];
 
-    $orderList = [];
+    $transactionCode = 'TRX-' . strtoupper(uniqid());
+    $resiCode = 'RESI-' . strtoupper(uniqid());
 
-    foreach ($cartItems as $cartItem) {
-        $order = new Order();
-        $order->transaction_code = 'TRX-' . strtoupper(uniqid());
-        $order->name = $name;
-        $order->rec_address = $address;
-        $order->phone = $phone;
-        $order->user_id = $userId;
-        $order->product_id = $cartItem->product_id;
-        $order->payment_status = $paymentMethod;
-        $order->status = $paymentMethod === 'transfer' ? 'menunggu pembayaran' : 'in progress';
-        $order->resi = 'RESI-' . strtoupper(uniqid());
+    $orderData = [
+        'transaction_code' => $transactionCode,
+        'name' => $request->name,
+        'rec_address' => $request->address,
+        'phone' => $request->phone,
+        'user_id' => $userId,
+        'payment_status' => $request->payment_method,
+        'status' => $request->payment_method === 'transfer' ? 'menunggu pembayaran' : 'in progress',
+        'resi' => $resiCode,
+        'shipping_provider' => $request->shipping_provider,
+        'shipping_cost' => $shippingRates[strtoupper($request->shipping_provider)] ?? 0,
+    ];
 
-        $order->save();
-        $orderList[] = $order;
-    }
+    // Simpan ke session sementara
+    session([
+        'pending_order' => $orderData,
+        'pending_cart' => $cartItems,
+    ]);
 
-    toastr()->timeOut(10000)->closeButton()->addSuccess('Pesanan berhasil dengan pembayaran: ' . $paymentMethod);
-
-    if ($paymentMethod === 'transfer') {
-        // Tidak menghapus cart dulu — tunggu sampai user upload bukti
-        return view('home.transfer', [
-            'order' => $orderList[0],
-            'orderList' => $orderList
-        ]);
-    }
-
-    // Hanya jika COD: kosongkan cart langsung
-    Cart::where('user_id', $userId)->delete();
-    return redirect('/myorders');
+    return redirect()->route('transfer_view');
 }
 
 
     public function myorders()
     {
-        $user = Auth::user()->id;
-        $count = Cart::where('user_id', $user)->count();
-        $order = Order::where('user_id', $user)->get();
-        return view('home.order', compact('count', 'order'));
-    }
+    $userId = Auth::id();
+
+    $orders = Order::with('product')
+        ->where('user_id', $userId)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return view('home.order', compact('orders')); // ✅ Kirim variable orders
+}
+
     public function shop()
     {
         $product = Product::all();
@@ -254,8 +256,15 @@ public function showTransferPage()
         return redirect('/')->with('error', 'Pesanan tidak ditemukan.');
     }
 
-    return view('home.transfer', compact('order'));
+    // Ambil semua order dengan resi yang sama
+    $orderList = Order::where('resi', $order->resi)
+                    ->with('product')
+                    ->get();
+
+    return view('home.transfer', compact('order', 'orderList'));
 }
+
+
 public function confirm_payment($id)
 {
     $order = Order::findOrFail($id);
@@ -275,26 +284,34 @@ public function confirm_payment($id)
 
 public function uploadTransferProof(Request $request, $id)
 {
-    $request->validate([
-        'transfer_proof' => 'required|mimes:jpg,jpeg,png,pdf|max:2048',
-    ]);
+    $orderData = session('pending_order');
+    $cartItems = session('pending_cart');
 
-    $order = Order::findOrFail($id);
+    if (!$orderData || !$cartItems) {
+        return redirect('/')->with('error', 'Data pesanan tidak ditemukan.');
+    }
 
-    if ($request->hasFile('transfer_proof')) {
-        $file = $request->file('transfer_proof');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('bukti_transfer'), $filename);
+    foreach ($cartItems as $cartItem) {
+        $order = new Order($orderData);
+        $order->product_id = $cartItem->product_id;
 
-        $order->bukti_transfer = $filename;
+        if ($request->hasFile('transfer_proof')) {
+            $file = $request->file('transfer_proof');
+            $filename = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('bukti_transfer'), $filename);
+            $order->bukti_transfer = $filename;
+        }
+
         $order->save();
     }
 
-    $orderList = Order::where('resi', $order->resi)->with('product')->get();
+    Cart::where('user_id', Auth::id())->delete();
+    session()->forget(['pending_order', 'pending_cart']);
 
-    toastr()->success('Bukti transfer berhasil diunggah.');
-    return view('home.transfer', compact('order', 'orderList'));
+    return redirect()->back()->with('success', 'Bukti transfer berhasil diupload.');
 }
+
+
 public function deleteItems(Request $request)
 {
     $itemIds = $request->input('delete_items', []);
@@ -309,5 +326,41 @@ public function deleteItems(Request $request)
 
     return redirect()->back()->with('error', 'Tidak ada item yang dipilih untuk dihapus.');
 }
+public function generateInvoice($id)
+{
+    $order = Order::with('product')->findOrFail($id);
+
+    // Jika 1 order memiliki banyak produk:
+    $orderList = $order->orderItems()->with('product')->get();
+
+    // Kalau produk disimpan langsung di relasi order -> product:
+    // $orderList = collect([$order]);
+
+    return view('home.invoice', compact('order', 'orderList'));
+
+    // atau jika pakai PDF:
+    // $pdf = Pdf::loadView('home.invoice', compact('order', 'orderList'));
+    // return $pdf->stream('Invoice-' . $order->transaction_code . '.pdf');
+}
+public function invoice($id)
+{
+    $order = Order::with('product')->findOrFail($id);
+    $orderList = Order::where('resi', $order->resi)->with('product')->get();
+    return view('home.invoice', compact('order', 'orderList'));
+}
+
+public function setBankTujuan(Request $request, $id)
+{
+    $request->validate([
+        'bank_tujuan' => 'required|in:bri,bni,mandiri'
+    ]);
+
+    $order = Order::findOrFail($id);
+    $order->bank_tujuan = $request->bank_tujuan;
+    $order->save();
+
+    return redirect()->back()->with('success', 'Bank tujuan berhasil disimpan.');
+}
+
 
 }

@@ -100,3 +100,8 @@ Route::get('/waiting/{id}', [AdminController::class, 'waiting']);
 
 Route::post('/cart/delete-items', [HomeController::class, 'deleteItems']);
 
+Route::get('/invoice/{id}', [HomeController::class, 'invoice'])->name('invoice');
+
+Route::post('/set-bank-tujuan/{id}', [HomeController::class, 'setBankTujuan'])->name('set.bank.tujuan');
+
+Route::get('/transfer-view', [HomeController::class, 'showTransferPage'])->name('transfer_view');

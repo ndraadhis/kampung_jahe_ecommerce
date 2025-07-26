@@ -2,148 +2,180 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Daftar Pesanan Saya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Saya</title>
     @include('home.css')
+
     <style>
-        .div_center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 60px;
-            flex-direction: column;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
         }
-        table {
-            border: 2px solid black;
+
+        h2 {
             text-align: center;
-            width: 90%;
+            margin-bottom: 30px;
+        }
+
+        .order-container {
             max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 15px;
         }
-        th {
-            border: 2px solid black;
-            background-color: black;
-            color: white;
-            font-size: 19px;
-            font-weight: bold;
-        }
-        td {
-            border: 1px solid black;
-            padding: 10px;
-        }
-        img {
+
+        .order-card {
+            background: #fff;
+            border: 1px solid #ddd;
             border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
         }
-        .invoice-button {
-            margin-top: 30px;
+
+        .order-header {
+            font-weight: bold;
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
         }
-        .btn-success {
-            padding: 10px 20px;
-            font-size: 15px;
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-top: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .product-img img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .order-actions {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
             border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-invoice {
             background-color: #28a745;
             color: white;
-            border-radius: 6px;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
             cursor: pointer;
             text-decoration: none;
-        }
-        .btn-danger {
-            padding: 6px 12px;
-            font-size: 14px;
-            background-color: #dc3545;
-            border: none;
-            color: white;
-            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-<div class="hero_area">
+
     @include('home.header')
 
-    <div class="div_center">
-        <h2>Pesanan Anda</h2>
-        <table>
-            <thead>
-    <tr>
-        <th>Nama Produk</th>
-        <th>Harga</th>
-        <th>Nomor Transaksi</th> <!-- Tambahan -->
-        <th>Status Pengiriman</th>
-        <th>Nomor Resi</th>
-        <th>Gambar</th>
-        <th>Aksi</th>
-    </tr>
-</thead>
-<tbody>
-    @foreach($order as $order)
-    <tr>
-        <td>{{ $order->product->title }}</td>
-        <td>Rp{{ number_format($order->product->price, 0, ',', '.') }}</td>
+    <div class="order-container">
+        <h2>Pesanan Saya</h2>
 
-        <td>{{ $order->transaction_code ?? '-' }}</td> <!-- Tambahan -->
+        @php
+            $groupedOrders = $orders->groupBy('transaction_code');
+        @endphp
 
-        <td>
-            @switch($order->status)
-                @case('waiting') Konfirmasi @break
-                @case('in progress') Sedang Diproses @break
-                @case('On the way') Dalam Pengiriman @break
-                @case('Delivered') Sedang Diantar @break
-                @default - 
-            @endswitch
-        </td>
-        <td>{{ $order->resi ?? '-' }}</td>
-        <td>
-            <img src="{{ asset('products/' . $order->product->image) }}" alt="gambar produk" width="150">
-        </td>
-        <td>
-            @if($order->status == 'in progress')
-            <form action="{{ route('user.cancel.order', $order->id) }}" method="POST" class="cancel-order-form">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger">Batal</button>
-            </form>
-            @else
-                <span>-</span>
-            @endif
-        </td>
-    </tr>
-    @endforeach
-</tbody>
+        @foreach($groupedOrders as $transactionCode => $orderGroup)
+            @php $first = $orderGroup->first(); @endphp
 
-        </table>
+            <div class="order-card">
+                <!-- Info Transaksi -->
+                <div class="order-header">
+                    Transaksi: {{ $transactionCode }} |
+                    Ekspedisi: {{ $first->shipping_provider ?? '-' }} |
+                    | Resi: {{ $first->resi ?? '-' }}
+                </div>
 
-        <div class="invoice-button">
-            <a href="{{ route('user.invoice.all') }}" class="btn btn-success" target="_blank">
-                Lihat Semua Invoice (PDF)
-            </a>
-        </div>
+                <!-- Daftar Produk -->
+                @foreach($orderGroup as $order)
+                    <div class="product-item">
+                        <div class="product-img">
+                            <img src="{{ asset('products/' . ($order->product->image ?? 'default.png')) }}" alt="Gambar Produk">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-title">{{ $order->product->title ?? 'Produk dihapus' }}</div>
+                            <div>Harga: Rp{{ number_format($order->product->price ?? 0, 0, ',', '.') }}</div>
+                            <div>
+                                Status:
+                                @switch($order->status)
+                                    @case('waiting') Konfirmasi @break
+                                    @case('in progress') Sedang Diproses @break
+                                    @case('On the way') Dalam Pengiriman @break
+                                    @case('Delivered') Selesai @break
+                                    @default -
+                                @endswitch
+                            </div>
+                        </div>
+
+                        <!-- Aksi (Batal) -->
+                        <div class="order-actions">
+                            @if($order->status == 'in progress')
+                                <form action="{{ route('user.cancel.order', $order->id) }}" method="POST" class="cancel-order-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn-cancel" type="submit">Batal</button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+
+                <!-- Tombol Invoice -->
+                <div class="order-actions">
+                    <a href="{{ route('user.invoice.all') }}" class="btn-invoice" target="_blank">Lihat Invoice</a>
+                </div>
+            </div>
+        @endforeach
     </div>
-</div>
 
-@include('home.footer')
+    @include('home.footer')
 
-<!-- SweetAlert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.querySelectorAll('.cancel-order-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Yakin ingin membatalkan?',
-                text: "Pesanan akan dibatalkan.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, batalkan',
-                cancelButtonText: 'Tidak'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+    <!-- SweetAlert Konfirmasi Batal -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.cancel-order-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Yakin ingin membatalkan?',
+                    text: "Pesanan akan dibatalkan.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, batalkan',
+                    cancelButtonText: 'Tidak'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
         });
-    });
-</script>
+    </script>
+
 </body>
 </html>
